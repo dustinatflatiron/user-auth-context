@@ -1,5 +1,6 @@
-import { createContext, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { createContext, useContext, useState } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
+import PostContext from "./post";
 
 const AuthContext = createContext({
   loginUser: null,
@@ -20,10 +21,17 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState("");
   const [errors, setErrors] = useState([]);
 
+  const { fetchPosts, postsCount } = useContext(PostContext);
+
   const navigate = useNavigate();
+  const location = useLocation();
 
   const fetchInitialUser = () => {
-    fetch("/me").then(responseHandler);
+    fetch("/me")
+      .then(responseHandler)
+      .catch((err) => {
+        navigate("/login");
+      });
   };
 
   const loginUser = (formData) => {
@@ -31,7 +39,11 @@ export const AuthProvider = ({ children }) => {
       method: "POST",
       headers: headers,
       body: JSON.stringify(formData),
-    }).then(responseHandler);
+    })
+      .then(responseHandler)
+      .catch((err) => {
+        navigate("/login");
+      });
   };
 
   const signupUser = (formData) => {
@@ -39,7 +51,11 @@ export const AuthProvider = ({ children }) => {
       method: "POST",
       headers: headers,
       body: JSON.stringify(formData),
-    }).then(responseHandler);
+    })
+      .then(responseHandler)
+      .catch((err) => {
+        navigate("/login");
+      });
   };
 
   const logoutUser = () => {
@@ -55,10 +71,20 @@ export const AuthProvider = ({ children }) => {
     if (res.ok) {
       res.json().then((data) => {
         setUser(data);
-        navigate("/posts");
+        if (postsCount < 1) {
+          fetchPosts().then(() => {
+            if (location.pathname.match(/signup|login|\/$/)) {
+              navigate("/posts");
+            }
+          });
+          return;
+        }
+        if (location.pathname.match(/signup|login|\/$/)) {
+          navigate("/posts");
+        }
       });
     } else {
-      navigate("/login");
+      throw new Error(`status code: ${res.status}`);
     }
   };
 

@@ -3,7 +3,12 @@ import { Link, Routes, Route } from "react-router-dom";
 import Login from "./components/Login";
 import Signup from "./components/Signup";
 import Posts from "./components/Posts";
-import AuthContext, { AuthProvider } from "./context/auth";
+import Post from "./components/Post";
+import AuthContext from "./context/auth";
+
+const linkStyles = {
+  margin: "4px",
+};
 
 function App() {
   const { user, fetchInitialUser, logoutUser } = useContext(AuthContext);
@@ -17,15 +22,23 @@ function App() {
       <header className="App-header">
         {!user && (
           <>
-            <Link to="/login">Login</Link>
-            <Link to="/signup">Signup</Link>
+            <Link style={linkStyles} to="/login">
+              Login
+            </Link>
+            <Link style={linkStyles} to="/signup">
+              Signup
+            </Link>
           </>
         )}
 
         {user && (
           <>
-            <Link onClick={logoutUser}>Logout</Link>
-            <Link to="/posts">View Posts</Link>
+            <Link style={linkStyles} onClick={logoutUser}>
+              Logout
+            </Link>
+            <Link style={linkStyles} to="/posts">
+              View Posts
+            </Link>
           </>
         )}
       </header>
@@ -37,7 +50,12 @@ function App() {
           </>
         )}
 
-        {user && <Route path="/posts" element={<Posts />} />}
+        {user && (
+          <>
+            <Route path="/posts" element={<Posts />} />
+            <Route path="/posts/:id" element={<Post />} />
+          </>
+        )}
       </Routes>
     </div>
   );
